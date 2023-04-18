@@ -78,7 +78,20 @@ public class DownloadServiceImpl extends BaseService implements DownloadService 
         download.setCreateBy(clientId);
         downloadMapper.insert(download);
         requirePermission(download, Const.DOWNLOAD);
-        final String downloadUser = getCurrentUser().getUsername();
+
+        //2023-01-11 当用户未登陆时，获取当前登陆用户会返回空。此时模拟登陆名为downloadUser的用户。此用户需要自行注册。
+        //密码举例 downloaduser!@#$%^&* 不必相同
+        //上述密码加密后密文为 $2a$10$NKJ7aCro83fsr5oESvzJ8e7OOXOLbmiySN0v0jby1zfdHclunbg76
+        String username_tmp = "";
+        try {
+            username_tmp = getCurrentUser().getUsername();
+        }catch (NullPointerException npe) {
+            log.info("获取已登陆用户失败，默认赋值为downloadUser",npe);
+            username_tmp = "downloadUser";
+        }
+
+        final String downloadUser = username_tmp;
+        // 2023-01-11 修改结束
 
         TaskExecutor.submit(() -> {
 
